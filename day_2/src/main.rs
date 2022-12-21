@@ -1,4 +1,4 @@
-use std::io::{self, BufReader, BufRead};
+use std::io::{self, BufReader, BufRead, Seek};
 use std::fs::File;
 use std::path::Path;
 use std::collections::HashMap;
@@ -27,6 +27,24 @@ const SELF_SHAPE_SCORE: [(char, u32); 3] = [
     ('Z', 3),
 ];
 
+const SELF_STRATEGY_SCORE: [(char, u32); 3] = [
+    ('X', 0),
+    ('Y', 3),
+    ('Z', 6),
+];
+
+const RPS_OUTCOME_MAP: [((u32, u32), u32); 9] = [
+    ((ShapeScore::Rock as u32, ShapeScore::Rock as u32), RoundScore::Draw as u32),
+    ((ShapeScore::Rock as u32, ShapeScore::Paper as u32), RoundScore::Loss as u32),
+    ((ShapeScore::Rock as u32, ShapeScore::Scissors as u32), RoundScore::Win as u32),
+    ((ShapeScore::Paper as u32, ShapeScore::Rock as u32), RoundScore::Win as u32),
+    ((ShapeScore::Paper as u32, ShapeScore::Paper as u32), RoundScore::Draw as u32),
+    ((ShapeScore::Paper as u32, ShapeScore::Scissors as u32), RoundScore::Loss as u32),
+    ((ShapeScore::Scissors as u32, ShapeScore::Rock as u32), RoundScore::Loss as u32),
+    ((ShapeScore::Scissors as u32, ShapeScore::Paper as u32), RoundScore::Win as u32),
+    ((ShapeScore::Scissors as u32, ShapeScore::Scissors as u32), RoundScore::Draw as u32),
+];
+
 fn main() {
     println!("Day 02");
 
@@ -36,6 +54,7 @@ fn main() {
     // Generate a HashMap to map chars to scores
     let opp_shape_score = HashMap::from(OPPONENT_SHAPE_SCORE);
     let self_shape_score = HashMap::from(SELF_SHAPE_SCORE);
+    let self_strategy_score = HashMap::from(SELF_STRATEGY_SCORE);
 
     // Score for the round
     let mut opp_round_score: u32 = 0;
@@ -64,10 +83,10 @@ fn main() {
         };
 
         // Add the win/loss/draw score for opponent
-        opp_total_score += determine_rps_win(opp_round_score, self_round_score) as u32;
+        opp_total_score += determine_rps_win(opp_round_score, self_round_score);
 
         // Add the win/loss/draw score for self
-        self_total_score += determine_rps_win(self_round_score, opp_round_score) as u32;
+        self_total_score += determine_rps_win(self_round_score, opp_round_score);
 
         // Add the round score
         opp_total_score += opp_round_score;
@@ -79,6 +98,26 @@ fn main() {
     }
 
     println!("Opponent total score: {opp_total_score}");
+    println!("Self total score: {self_total_score}");
+
+    // Part 2
+    println!("Part 2");
+
+    // Loop through each line of the input
+    let mut self_total_score: u32 = 0;
+    let file = get_input_file();
+    let reader = BufReader::new(file);
+    for line in reader.lines(){
+        // Convert the line into a vector of chars
+        let line = line.expect("Unable to read line");
+        let chars: Vec<char> = line.chars().collect();
+
+        self_total_score += *self_strategy_score.get(&chars[2]).expect("HashMap issue with strategy map");
+        self_total_score += determine_strategy_shape_score(
+            *opp_shape_score.get(&chars[0]).expect("HashMap issue with opp shape map"),
+            *self_strategy_score.get(&chars[2]).expect("HashMap issue with self shape map")
+        );
+    }
     println!("Self total score: {self_total_score}");
 }
 
@@ -103,30 +142,24 @@ fn get_input_file() -> File {
     file
 }
 
-fn determine_rps_win(a: u32, b: u32) -> RoundScore {
-    if a == ShapeScore::Rock as u32 {
-        if b == ShapeScore::Paper as u32 {
-            RoundScore::Loss
-        } else if b == ShapeScore::Scissors as u32 {
-            RoundScore::Win
-        } else {
-            RoundScore::Draw
-        }
-    } else if a == ShapeScore::Paper as u32 {
-        if b == ShapeScore::Scissors as u32 {
-            RoundScore::Loss
-        } else if b == ShapeScore::Rock as u32 {
-            RoundScore::Win
-        } else {
-            RoundScore::Draw
-        }
-    } else {
-        if b == ShapeScore::Rock as u32 {
-            RoundScore::Loss
-        } else if b == ShapeScore::Paper as u32 {
-            RoundScore::Win
-        } else {
-            RoundScore::Draw
-        }
+fn determine_rps_win(a: u32, b: u32) -> u32 {
+    let rps_outcome_map = HashMap::from(RPS_OUTCOME_MAP);
+
+    match rps_outcome_map.get(&(a, b)) {
+        Some(&score) => score,
+        None => panic!("couldn't map the outcome!"),
     }
+}
+
+fn determine_strategy_shape_score(opp: u32, mine: u32) -> u32 {
+    let rps_outcome_map = HashMap::from(RPS_OUTCOME_MAP);
+
+    let mut result: u32 = 0;
+    for (&k, &v) in rps_outcome_map.iter() {
+        if k.1 == opp && v == mine {
+            result = k.0;
+            break;
+        }
+    };
+    result
 }
