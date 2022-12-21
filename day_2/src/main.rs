@@ -64,22 +64,10 @@ fn main() {
         };
 
         // Add the win/loss/draw score for opponent
-        opp_total_score += if opp_round_score > self_round_score {
-            RoundScore::Win as u32
-        } else if opp_round_score < self_round_score {
-            RoundScore::Loss as u32
-        } else {
-            RoundScore::Draw as u32
-        };
+        opp_total_score += determine_rps_win(opp_round_score, self_round_score) as u32;
 
         // Add the win/loss/draw score for self
-        self_total_score += if opp_round_score > self_round_score {
-            RoundScore::Loss as u32
-        } else if opp_round_score < self_round_score {
-            RoundScore::Win as u32
-        } else {
-            RoundScore::Draw as u32
-        };
+        self_total_score += determine_rps_win(self_round_score, opp_round_score) as u32;
 
         // Add the round score
         opp_total_score += opp_round_score;
@@ -113,4 +101,32 @@ fn get_input_file() -> File {
         Ok(file) => file,
     };
     file
+}
+
+fn determine_rps_win(a: u32, b: u32) -> RoundScore {
+    if a == ShapeScore::Rock as u32 {
+        if b == ShapeScore::Paper as u32 {
+            RoundScore::Loss
+        } else if b == ShapeScore::Scissors as u32 {
+            RoundScore::Win
+        } else {
+            RoundScore::Draw
+        }
+    } else if a == ShapeScore::Paper as u32 {
+        if b == ShapeScore::Scissors as u32 {
+            RoundScore::Loss
+        } else if b == ShapeScore::Rock as u32 {
+            RoundScore::Win
+        } else {
+            RoundScore::Draw
+        }
+    } else {
+        if b == ShapeScore::Rock as u32 {
+            RoundScore::Loss
+        } else if b == ShapeScore::Paper as u32 {
+            RoundScore::Win
+        } else {
+            RoundScore::Draw
+        }
+    }
 }
