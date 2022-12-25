@@ -1,20 +1,31 @@
-use std::io::{self, BufReader, BufRead};
+use std::io::{self, BufReader, BufRead, Read};
 use std::fs::File;
 use std::path::Path;
+use std::env::args;
 
 fn main() {
+    let args: Vec<String> = args().collect();
     println!("Day 03");
 
-    // Get input file
-    let file = get_input_file();
+    let file: File;
+    if &args.len() > &1 {
+        if Path::new(&args[1]).exists() {
+            file = open_file_with_handling(&args[1]);
+        } else {
+            println!("Provided file not found, try again");
+            file = get_input_file();
+        }
+    } else {
+        // Get input file
+        file = get_input_file();
+    }
 
     let mut total_priority = 0;
 
     // Loop through each line of the input
-    let reader = BufReader::new(file);
-    for line in reader.lines(){
-        let line = line.expect("Unable to read line");
-
+    let reader = BufReader::new(&file);
+    let lines: Vec<String> = reader.lines().map(|l| l.expect("Unable to read lines")).collect();
+    for line in &lines {
         let (first, second) = line.split_at(line.len()/2);
         let first_chars: Vec<char> = first.chars().collect();
         let second_chars: Vec<char> = second.chars().collect();
@@ -30,6 +41,32 @@ fn main() {
     }
 
     println!("Total priority: {total_priority}");
+
+    // Part 2
+    println!("Part 2");
+
+    let mut total_priority = 0;
+    for group in lines.chunks(3) {
+        let first: Vec<char> = group[0].chars().collect();
+        let second: Vec<char> = group[1].chars().collect();
+        let third: Vec<char> = group[2].chars().collect();
+
+        let common = find_common_char_threeway(first, second, third);
+
+        if common != ' ' {
+            let cur_value = char_value(common);
+            if cur_value > 0 {
+                total_priority += cur_value;
+            } else {
+                panic!("Invalid char found! {common}");
+            }
+        } else {
+            panic!("No common char found");
+        }
+    }
+
+    println!("Total priority part 2: {total_priority}");
+
 }
 
 fn get_input_file() -> File {
@@ -42,6 +79,11 @@ fn get_input_file() -> File {
 
     // Trim off the newline and convert to path
     let filename = filename.trim();
+    let file = open_file_with_handling(filename);
+    file
+}
+
+fn open_file_with_handling(filename: &str) -> File {
     let path = Path::new(filename);
 
     // Open the file in read only mode
@@ -57,6 +99,17 @@ fn find_common_char(first: Vec<char>, second: Vec<char>) -> char {
     for ch in first {
         if second.contains(&ch) {
             return ch;
+        }
+    }
+    ' '
+}
+
+fn find_common_char_threeway(first: Vec<char>, second: Vec<char>, third: Vec<char>) -> char {
+    for ch in first {
+        if second.contains(&ch) {
+            if third.contains(&ch) {
+                return ch;
+            }
         }
     }
     ' '
