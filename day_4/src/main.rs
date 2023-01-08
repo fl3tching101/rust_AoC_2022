@@ -46,6 +46,18 @@ fn main() {
     }
 
     println!("Total count: {}", count);
+
+    // Part 2
+    println!("Part 2:");
+
+    let mut count_any_overlap = 0;
+    for pair in &elf_pairs {
+        if check_if_overlapped(&pair) {
+            count_any_overlap += 1;
+        }
+    }
+
+    println!("Total with any overlap: {}", count_any_overlap);
 }
 
 fn get_input_file() -> File {
@@ -101,4 +113,19 @@ fn check_if_range_fully_contained(pair: &ElfPair) -> bool {
     }
 
     ((elf1[0] <= elf2[0]) && (elf1[1] >= elf2[1])) || ((elf2[0] <= elf1[0]) && (elf2[1] >= elf1[1]))
+}
+
+fn check_if_overlapped(pair: &ElfPair) -> bool {
+    let mut elf1: Vec<u32> = Vec::new();
+    let mut elf2: Vec<u32> = Vec::new();
+    if let Elf::ELF1(start, end) = pair.elf_1 {
+        elf1.push(start);
+        elf1.push(end);
+    }
+    if let Elf::ELF2(start, end) = pair.elf_2 {
+        elf2.push(start);
+        elf2.push(end);
+    }
+
+    ((elf1[0] <= elf2[1]) && (elf1[1] >= elf2[0])) || ((elf2[0] <= elf1[1]) && (elf2[1] >= elf1[0]))
 }
