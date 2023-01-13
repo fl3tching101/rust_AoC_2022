@@ -15,7 +15,7 @@ struct ElfPair {
 
 fn main() {
     let args: Vec<String> = args().collect();
-    println!("Day 03");
+    println!("Day 04");
 
     let file: File;
     if &args.len() > &1 {
