@@ -1,4 +1,4 @@
-use std::io::{self, BufReader, BufRead, Read};
+use std::io::{self, BufReader, BufRead};
 use std::fs::File;
 use std::path::Path;
 use std::env::args;
@@ -21,14 +21,15 @@ fn main() {
     }
 
     // Loop through each line of the input
-    let mut elf_pairs: Vec<ElfPair> = Vec::new();
     let reader = BufReader::new(&file);
     let lines: Vec<String> = reader.lines().map(|l| l.expect("Unable to read lines")).collect();
-    while line in &lines != "\n" {
-        println!("{}", line);
+    let line_break = lines.iter().position(|x| x.eq("")).expect("Unable to separate stacks from instructions");
+
+    let num_stacks = lines[line_break-1].split(' ').collect::<Vec<&str>>(); // Need the number of stacks
+    for i in 0..line_break-1 {
+        println!("Line {}: {:?}", i, lines[i]);
     }
-
-
+    println!("Number of stacks: {:?}", num_stacks);
 }
 
 fn get_input_file() -> File {
