@@ -3,6 +3,13 @@ use std::fs::File;
 use std::path::Path;
 use std::env::args;
 
+#[derive(Debug)]
+struct instruction {
+    count: u32,
+    from: u32,
+    to: u32,
+}
+
 fn main() {
     let args: Vec<String> = args().collect();
     println!("Day 05");
@@ -25,11 +32,41 @@ fn main() {
     let lines: Vec<String> = reader.lines().map(|l| l.expect("Unable to read lines")).collect();
     let line_break = lines.iter().position(|x| x.eq("")).expect("Unable to separate stacks from instructions");
 
-    let num_stacks = lines[line_break-1].split(' ').collect::<Vec<&str>>(); // Need the number of stacks
-    for i in 0..line_break-1 {
-        println!("Line {}: {:?}", i, lines[i]);
+    // Need the number of stacks
+    let stack_labels = lines[line_break-1].split(' ').collect::<Vec<&str>>();
+    let num_stacks = stack_labels[stack_labels.len() - 2].parse::<u32>().unwrap();
+
+    // Build the stack vector
+    let mut stacks: Vec<Vec<char>> = Vec::new();
+    for i in 0..num_stacks {
+        let tmp_vec: Vec<char> = Vec::new();
+        stacks.push(tmp_vec);
     }
-    println!("Number of stacks: {:?}", num_stacks);
+
+    // Put together the stacks
+    for i in (0..line_break-1).rev() {
+        let line_array: Vec<char> = lines[i].chars().collect();
+        for j in (1..line_array.len() - 1).step_by(4) {
+            if line_array[j] != ' ' {
+                stacks[(j-1)/4].push(line_array[j]);
+            }
+        }
+    }
+
+    // Grab instructions
+    let mut instruction_list: Vec<instruction> = Vec::new();
+    for i in line_break+1..lines.len() {
+        let cur_line: Vec<&str> = lines[i].split(' ').collect();
+        let cur_instruction: instruction = instruction { 
+            count: (cur_line[1].parse().unwrap()), 
+            from: (cur_line[3].parse().unwrap()), 
+            to: (cur_line[5].parse().unwrap()),
+        };
+        instruction_list.push(cur_instruction);
+    }
+
+    println!("Stacks: {:?}", stacks);
+    println!("Instruction list: {:?}", instruction_list);
 }
 
 fn get_input_file() -> File {
