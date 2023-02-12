@@ -65,8 +65,31 @@ fn main() {
         instruction_list.push(cur_instruction);
     }
 
-    println!("Stacks: {:?}", stacks);
-    println!("Instruction list: {:?}", instruction_list);
+    // Finally, perform the instructions
+    for instruction in &instruction_list {
+        perform_instruction(&instruction, &mut stacks);
+    }
+
+    print!("Top of stacks: ");
+    for i in 0..stacks.len() {
+        print!("[{}] ", stacks[i].last().unwrap());
+    }
+}
+
+fn perform_instruction(instruction: &instruction, stacks: &mut Vec<Vec<char>>) -> bool {
+    let ret = true;
+
+    let count = instruction.count;
+    let from = instruction.from;
+    let to = instruction.to;
+
+    let mut tmp: char;
+    for i in 0..count {
+        tmp = stacks[(from-1) as usize].pop().unwrap();
+        stacks[(to-1) as usize].push(tmp);
+    }
+
+    return ret;
 }
 
 fn get_input_file() -> File {
