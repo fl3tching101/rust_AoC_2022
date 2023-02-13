@@ -53,6 +53,9 @@ fn main() {
         }
     }
 
+    // Clone for part 2
+    let mut stacks_p2: Vec<Vec<char>> = stacks.clone();
+
     // Grab instructions
     let mut instruction_list: Vec<instruction> = Vec::new();
     for i in line_break+1..lines.len() {
@@ -74,6 +77,19 @@ fn main() {
     for i in 0..stacks.len() {
         print!("[{}] ", stacks[i].last().unwrap());
     }
+
+    // Part 2
+    println!("\nPart 2!");
+
+    // Perform the instructions for part 2
+    for instruction in &instruction_list {
+        perform_instruction_p2(&instruction, &mut stacks_p2);
+    }
+
+    print!("Top of stacks part 2: ");
+    for i in 0..stacks_p2.len() {
+        print!("[{}] ", stacks_p2[i].last().unwrap());
+    }
 }
 
 fn perform_instruction(instruction: &instruction, stacks: &mut Vec<Vec<char>>) -> bool {
@@ -87,6 +103,24 @@ fn perform_instruction(instruction: &instruction, stacks: &mut Vec<Vec<char>>) -
     for i in 0..count {
         tmp = stacks[(from-1) as usize].pop().unwrap();
         stacks[(to-1) as usize].push(tmp);
+    }
+
+    return ret;
+}
+
+fn perform_instruction_p2(instruction: &instruction, stacks: &mut Vec<Vec<char>>) -> bool {
+    let ret = true;
+
+    let count = instruction.count;
+    let from = instruction.from;
+    let to = instruction.to;
+
+    let mut tmp: Vec<char> = Vec::new();
+    for i in 0..count {
+        tmp.push(stacks[(from-1) as usize].pop().unwrap());
+    }
+    for i in 0..count {
+        stacks[(to-1) as usize].push(tmp.pop().unwrap());
     }
 
     return ret;
