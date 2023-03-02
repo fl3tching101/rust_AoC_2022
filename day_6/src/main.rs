@@ -48,7 +48,30 @@ fn main() {
         }
     }
 
-    println!("Marker found at position {}", marker_pos);
+    println!("Packet marker found at position {}", marker_pos);
+
+    println!("Part 2");
+
+    // Setup but for part 2
+    let mut message_queue: VecDeque<char> = VecDeque::with_capacity(14);
+    let message_input_chars = input.chars();
+    let mut message_found = false;
+    let mut message_marker_pos = 0;
+
+    for c in message_input_chars {
+        message_queue.push_back(c);
+        message_marker_pos += 1;
+        if message_queue.len() >= 14 {
+            message_found = check_for_marker(&message_queue);
+            if message_found == true {
+                break;
+            }
+            message_queue.pop_front();
+        }
+    }
+
+    println!("Message marker found at position {}", message_marker_pos);
+
 }
 
 fn check_for_marker(queue: &VecDeque<char>) -> bool {
